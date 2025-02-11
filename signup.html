@@ -6,7 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="signup.css">
-    <script type="module">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Register & Sign Up</h2>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="tel" id="phone" placeholder="Phone" required>
+        <button id="signUp-btn">Sign Up</button>
+        <button id="google-signUp">Sign Up with Google</button>
+        <p>-----OR----</p>
+        <p class="switch">Already have an account? <a href="index.html">Login</a></p>
+    </div>
+        <script type="module">
 import {
   addDoc,
   collection,
@@ -130,20 +144,6 @@ getMyPosts();
 getAllPosts();
 
     </script>
-</head>
-
-<body>
-    <div class="container">
-        <h2>Register & Sign Up</h2>
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <input type="tel" id="phone" placeholder="Phone" required>
-        <button id="signUp-btn">Sign Up</button>
-        <button id="google-signUp">Sign Up with Google</button>
-        <p>-----OR----</p>
-        <p class="switch">Already have an account? <a href="index.html">Login</a></p>
-    </div>
 </body>
 
 </html>
