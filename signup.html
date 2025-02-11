@@ -23,11 +23,6 @@ let myPostDiv = document.querySelector("#myPosts");
 let allPostDiv = document.querySelector("#allPosts");
 
 let loggedInUser = localStorage.getItem("loggedInUser");
-
-if (!loggedInUser) {
-  window.location.replace("./index.html");
-}
-
 // ✅ Create a post & refresh data
 let createPost = async (text) => {
   try {
