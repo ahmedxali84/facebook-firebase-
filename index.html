@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } 
+        from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBikfwXnXrix111jJT6CwxEHDIHVrsthrg",
+            authDomain: "facebook-b15f7.firebaseapp.com",
+            projectId: "facebook-b15f7",
+            storageBucket: "facebook-b15f7.firebasestorage.app",
+            messagingSenderId: "808455848441",
+            appId: "1:808455848441:web:31605716c6c5fcb832bd28",
+            measurementId: "G-YXRZ2VD5L4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("login-btn").addEventListener("click", async function () {
+                let email = document.getElementById("login-username").value;
+                let password = document.getElementById("login-password").value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    window.location.replace("dashboard.html");
+                } catch (error) {
+                    document.getElementById("login-error").textContent = "Invalid credentials!";
+                }
+            });
+
+            document.getElementById("google-login").addEventListener("click", async function () {
+                try {
+                    await signInWithPopup(auth, provider);
+                    window.location.replace("dashboard.html");
+                } catch (error) {
+                    console.error(error.message);
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <input type="email" id="login-username" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button id="login-btn">Login</button>
+        <p id="login-error" style="color: red;"></p>
+        <button id="google-login">Login with Google</button>
+        <p>-----OR----</p>
+        <p class="switch">Don't have an account? <a href="signup.html">Sign Up</a></p>
+    </div>
+</body>
+
+</html>

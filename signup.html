@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="signup.css">
+    <script type="module">
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import { db, auth } from "./firebaseConfig.js";
+
+let myPostDiv = document.querySelector("#myPosts");
+let allPostDiv = document.querySelector("#allPosts");
+
+let loggedInUser = localStorage.getItem("loggedInUser");
+
+if (!loggedInUser) {
+  window.location.replace("./index.html");
+}
+
+// ✅ Create a post & refresh data
+let createPost = async (text) => {
+  try {
+    const docRef = await addDoc(collection(db, "posts"), {
+      postText: text,
+      uid: loggedInUser,
+    });
+    console.log("Post added:", docRef.id);
+
+    document.querySelector("#post-inp").value = ""; // Clear input field
+
+    getMyPosts();  // Refresh user posts
+    getAllPosts(); // Refresh all posts
+  } catch (error) {
+    console.error("Error adding post:", error);
+  }
+};
+
+// ✅ Get all posts (public)
+let getAllPosts = async () => {
+  allPostDiv.innerHTML = "";
+  try {
+    const posts = await getDocs(collection(db, "posts"));
+
+    if (posts.empty) {
+      allPostDiv.innerHTML = "<p>No posts available</p>";
+      return;
+    }
+
+    posts.forEach((post) => {
+      allPostDiv.innerHTML += `<div>${post.data().postText}</div><hr>`;
+    });
+  } catch (error) {
+    console.error("Error getting posts:", error);
+  }
+};
+
+// ✅ Get logged-in user's posts
+let getMyPosts = async () => {
+  myPostDiv.innerHTML = "";
+  try {
+    const q = query(collection(db, "posts"), where("uid", "==", loggedInUser));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      myPostDiv.innerHTML = "<p>No posts found</p>";
+      return;
+    }
+
+    querySnapshot.forEach((post) => {
+      myPostDiv.innerHTML += `
+        <div>
+          ${post.data().postText} 
+          <button id='${post.id}' class='update-btn'>Edit</button>
+        </div>
+        <hr>`;
+
+      document.getElementById(post.id).addEventListener("click", () => {
+        updatePost(post.id);
+      });
+    });
+  } catch (error) {
+    console.error("Error getting posts:", error);
+  }
+};
+
+// ✅ Update a post
+let updatePost = async (post_id) => {
+  let newText = prompt("Enter new post text:");
+  if (newText) {
+    try {
+      await updateDoc(doc(db, "posts", post_id), {
+        postText: newText,
+      });
+      console.log("Post updated");
+      getMyPosts(); // Refresh user posts
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
+  }
+};
+
+// ✅ Add new post event listener
+document.querySelector("#add").addEventListener("click", () => {
+  let postTxt = document.querySelector("#post-inp").value;
+  if (postTxt.trim() !== "") {
+    createPost(postTxt);
+  }
+});
+
+// ✅ Sign out event listener
+document.querySelector("#signOut").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    localStorage.removeItem("loggedInUser");
+    console.log("User signed out successfully");
+    window.location.replace("./index.html"); // Redirect after logout
+  } catch (error) {
+    console.error("Error signing out:", error.message);
+  }
+});
+
+// ✅ Load posts on page load
+getMyPosts();
+getAllPosts();
+
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Register & Sign Up</h2>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="tel" id="phone" placeholder="Phone" required>
+        <button id="signUp-btn">Sign Up</button>
+        <button id="google-signUp">Sign Up with Google</button>
+        <p>-----OR----</p>
+        <p class="switch">Already have an account? <a href="index.html">Login</a></p>
+    </div>
+</body>
+
+</html>

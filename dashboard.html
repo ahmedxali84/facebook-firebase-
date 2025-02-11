@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background-color: #333;
+    color: white;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+main {
+    width: 50%;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px gray;
+}
+
+input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+section {
+    margin-top: 20px;
+}
+
+#myPosts, #allPosts {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dashboard</h1>
+        <button id="signOut">Sign Out</button>
+    </header>
+
+    <main>
+        <section id="post-section">
+            <h2>Create a Post</h2>
+            <input type="text" id="post-inp" placeholder="Write your post...">
+            <button id="add">Add Post</button>
+        </section>
+
+        <section id="my-posts">
+            <h2>My Posts</h2>
+            <div id="myPosts"></div>
+        </section>
+
+        <section id="all-posts">
+            <h2>All Posts</h2>
+            <div id="allPosts"></div>
+        </section>
+    </main>
+
+    <script type="module">
+       import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import { db, auth } from "./firebaseConfig.js";
+
+let myPostDiv = document.querySelector("#myPosts");
+let allPostDiv = document.querySelector("#allPosts");
+
+let loggedInUser = localStorage.getItem("loggedInUser");
+
+if (!loggedInUser) {
+  window.location.replace("./index.html");
+}
+
+// Create a post
+let createPost = async (text) => {
+  try {
+    await addDoc(collection(db, "posts"), {
+      postText: text,
+      uid: loggedInUser,
+    });
+    console.log("Post added");
+    getMyPosts();
+    getAllPosts();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Get all posts
+let getAllPosts = async () => {
+  allPostDiv.innerHTML = "";
+  try {
+    const posts = await getDocs(collection(db, "posts"));
+    posts.forEach((post) => {
+      allPostDiv.innerHTML += `<div>${post.data().postText}</div><hr>`;
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Get logged-in user's posts
+let getMyPosts = async () => {
+  myPostDiv.innerHTML = "";
+  try {
+    const q = query(collection(db, "posts"), where("uid", "==", loggedInUser));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((post) => {
+      myPostDiv.innerHTML += `
+        <div>
+          ${post.data().postText} 
+          <button id='${post.id}' class='update-btn'>Edit</button>
+        </div>
+        <hr>`;
+
+      document.getElementById(post.id).addEventListener("click", () => {
+        updatePost(post.id);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Update a post
+let updatePost = async (post_id) => {
+  let newText = prompt("Enter new post text:");
+  if (newText) {
+    try {
+      await updateDoc(doc(db, "posts", post_id), {
+        postText: newText,
+      });
+      console.log("Post updated");
+      getMyPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+// Add new post event
+document.querySelector("#add").addEventListener("click", () => {
+  let postTxt = document.querySelector("#post-inp").value;
+  if (postTxt.trim() !== "") {
+    createPost(postTxt);
+    document.querySelector("#post-inp").value = "";
+  }
+});
+
+// Sign out event
+document.querySelector("#signOut").addEventListener("click", async () => {
+  await signOut(auth);
+  localStorage.removeItem("loggedInUser");
+  window.location.replace("./index.html");
+});
+
+getMyPosts();
+getAllPosts();
+
+    </script>
+</body>
+</html>
