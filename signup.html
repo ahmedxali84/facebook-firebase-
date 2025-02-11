@@ -34,9 +34,8 @@
         import { signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         import { db, auth } from "./firebaseConfig.js";
 
-        // Wait for the DOM content to be fully loaded
         document.addEventListener("DOMContentLoaded", function() {
-            // Add event listener to sign-up button
+            // Ensure elements exist before adding event listeners
             const signUpButton = document.querySelector("#signUp-btn");
             if (signUpButton) {
                 signUpButton.addEventListener("click", () => {
@@ -45,136 +44,135 @@
                     const password = document.querySelector("#password").value;
                     const phone = document.querySelector("#phone").value;
 
-                    // Implement sign-up logic here (for example, Firebase authentication)
+                    // Handle the sign-up logic here
                     console.log("Sign Up", { name, email, password, phone });
 
-                    // Handle sign-up logic (e.g., store user data, redirect, etc.)
+                    // Implement the sign-up logic (e.g., Firebase authentication)
                 });
             }
 
-            // Add event listener to Google sign-up button
             const googleSignUpButton = document.querySelector("#google-signUp");
             if (googleSignUpButton) {
                 googleSignUpButton.addEventListener("click", () => {
-                    // Handle Google sign-up logic here (e.g., Firebase Auth with Google)
+                    // Handle Google sign-up logic here
                     console.log("Sign Up with Google");
 
                     // Implement Firebase Google sign-in or other logic
                 });
             }
-        });
 
-        // Your post-related functionality remains the same as in the original code
-        let myPostDiv = document.querySelector("#myPosts");
-        let allPostDiv = document.querySelector("#allPosts");
+            // Your existing post-related functionality
+            let myPostDiv = document.querySelector("#myPosts");
+            let allPostDiv = document.querySelector("#allPosts");
 
-        let loggedInUser = localStorage.getItem("loggedInUser");
+            let loggedInUser = localStorage.getItem("loggedInUser");
 
-        // ✅ Create a post & refresh data
-        let createPost = async (text) => {
-            try {
-                const docRef = await addDoc(collection(db, "posts"), {
-                    postText: text,
-                    uid: loggedInUser,
-                });
-                console.log("Post added:", docRef.id);
-
-                document.querySelector("#post-inp").value = ""; // Clear input field
-
-                getMyPosts();  // Refresh user posts
-                getAllPosts(); // Refresh all posts
-            } catch (error) {
-                console.error("Error adding post:", error);
-            }
-        };
-
-        // ✅ Get all posts (public)
-        let getAllPosts = async () => {
-            allPostDiv.innerHTML = "";
-            try {
-                const posts = await getDocs(collection(db, "posts"));
-
-                if (posts.empty) {
-                    allPostDiv.innerHTML = "<p>No posts available</p>";
-                    return;
-                }
-
-                posts.forEach((post) => {
-                    allPostDiv.innerHTML += `<div>${post.data().postText}</div><hr>`;
-                });
-            } catch (error) {
-                console.error("Error getting posts:", error);
-            }
-        };
-
-        // ✅ Get logged-in user's posts
-        let getMyPosts = async () => {
-            myPostDiv.innerHTML = "";
-            try {
-                const q = query(collection(db, "posts"), where("uid", "==", loggedInUser));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    myPostDiv.innerHTML = "<p>No posts found</p>";
-                    return;
-                }
-
-                querySnapshot.forEach((post) => {
-                    myPostDiv.innerHTML += `
-                        <div>
-                          ${post.data().postText} 
-                          <button id='${post.id}' class='update-btn'>Edit</button>
-                        </div>
-                        <hr>`;
-
-                    document.getElementById(post.id).addEventListener("click", () => {
-                        updatePost(post.id);
-                    });
-                });
-            } catch (error) {
-                console.error("Error getting posts:", error);
-            }
-        };
-
-        // ✅ Update a post
-        let updatePost = async (post_id) => {
-            let newText = prompt("Enter new post text:");
-            if (newText) {
+            // ✅ Create a post & refresh data
+            let createPost = async (text) => {
                 try {
-                    await updateDoc(doc(db, "posts", post_id), {
-                        postText: newText,
+                    const docRef = await addDoc(collection(db, "posts"), {
+                        postText: text,
+                        uid: loggedInUser,
                     });
-                    console.log("Post updated");
-                    getMyPosts(); // Refresh user posts
+                    console.log("Post added:", docRef.id);
+
+                    document.querySelector("#post-inp").value = ""; // Clear input field
+
+                    getMyPosts();  // Refresh user posts
+                    getAllPosts(); // Refresh all posts
                 } catch (error) {
-                    console.error("Error updating post:", error);
+                    console.error("Error adding post:", error);
                 }
-            }
-        };
+            };
 
-        // ✅ Add new post event listener
-        document.querySelector("#add").addEventListener("click", () => {
-            let postTxt = document.querySelector("#post-inp").value;
-            if (postTxt.trim() !== "") {
-                createPost(postTxt);
-            }
+            // ✅ Get all posts (public)
+            let getAllPosts = async () => {
+                allPostDiv.innerHTML = "";
+                try {
+                    const posts = await getDocs(collection(db, "posts"));
+
+                    if (posts.empty) {
+                        allPostDiv.innerHTML = "<p>No posts available</p>";
+                        return;
+                    }
+
+                    posts.forEach((post) => {
+                        allPostDiv.innerHTML += `<div>${post.data().postText}</div><hr>`;
+                    });
+                } catch (error) {
+                    console.error("Error getting posts:", error);
+                }
+            };
+
+            // ✅ Get logged-in user's posts
+            let getMyPosts = async () => {
+                myPostDiv.innerHTML = "";
+                try {
+                    const q = query(collection(db, "posts"), where("uid", "==", loggedInUser));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        myPostDiv.innerHTML = "<p>No posts found</p>";
+                        return;
+                    }
+
+                    querySnapshot.forEach((post) => {
+                        myPostDiv.innerHTML += `
+                            <div>
+                              ${post.data().postText} 
+                              <button id='${post.id}' class='update-btn'>Edit</button>
+                            </div>
+                            <hr>`;
+
+                        document.getElementById(post.id).addEventListener("click", () => {
+                            updatePost(post.id);
+                        });
+                    });
+                } catch (error) {
+                    console.error("Error getting posts:", error);
+                }
+            };
+
+            // ✅ Update a post
+            let updatePost = async (post_id) => {
+                let newText = prompt("Enter new post text:");
+                if (newText) {
+                    try {
+                        await updateDoc(doc(db, "posts", post_id), {
+                            postText: newText,
+                        });
+                        console.log("Post updated");
+                        getMyPosts(); // Refresh user posts
+                    } catch (error) {
+                        console.error("Error updating post:", error);
+                    }
+                }
+            };
+
+            // ✅ Add new post event listener
+            document.querySelector("#add").addEventListener("click", () => {
+                let postTxt = document.querySelector("#post-inp").value;
+                if (postTxt.trim() !== "") {
+                    createPost(postTxt);
+                }
+            });
+
+            // ✅ Sign out event listener
+            document.querySelector("#signOut").addEventListener("click", async () => {
+                try {
+                    await signOut(auth);
+                    localStorage.removeItem("loggedInUser");
+                    console.log("User signed out successfully");
+                    window.location.replace("./index.html"); // Redirect after logout
+                } catch (error) {
+                    console.error("Error signing out:", error.message);
+                }
+            });
+
+            // ✅ Load posts on page load
+            getMyPosts();
+            getAllPosts();
         });
-
-        // ✅ Sign out event listener
-        document.querySelector("#signOut").addEventListener("click", async () => {
-            try {
-                await signOut(auth);
-                localStorage.removeItem("loggedInUser");
-                console.log("User signed out successfully");
-                window.location.replace("./index.html"); // Redirect after logout
-            } catch (error) {
-                console.error("Error signing out:", error.message);
-            }
-        });
-
-        // ✅ Load posts on page load
-        getMyPosts();
-        getAllPosts();
     </script>
 </body>
 
